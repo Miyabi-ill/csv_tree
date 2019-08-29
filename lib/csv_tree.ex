@@ -12,21 +12,21 @@ defmodule CsvTree do
   """
   
   def build_oneline(line) do
+    _build_oneline_notrim(line)
+    |> trim_map()
+  end
+  
+  defp _build_oneline_notrim(line) do
     String.split(line, ",")
     |> build_map()
-    |> trim_map()
   end
   
   def build_twoline(line1, line2) do
-    map1 = String.split(line1, ",")
-    |> build_map()
-    map2 = String.split(line2, ",")
-    |> build_map()
-    merge_map_recursive(map1, map2)
+    _build_twoline_notrim(line1, line2)
     |> trim_map()
   end
   
-  def build_twoline_notrim(line1, line2) do
+  defp _build_twoline_notrim(line1, line2) do
     map1 = String.split(line1, ",")
     |> build_map()
     map2 = String.split(line2, ",")
@@ -34,10 +34,10 @@ defmodule CsvTree do
     merge_map_recursive(map1, map2)
   end
   
-  def build_multiline([head | []]), do: String.split(head, ",") |> build_map()
-  def build_multiline([line1 | [line2 | []]]), do: build_twoline_notrim(line1, line2)
+  def build_multiline([head | []]), do: _build_oneline_notrim(head)
+  def build_multiline([line1 | [line2 | []]]), do: _build_twoline_notrim(line1, line2)
   def build_multiline([line1 | [line2 | tail]]) do
-    map = build_twoline_notrim(line1, line2)
+    map = _build_twoline_notrim(line1, line2)
     merge_map_recursive(map, build_multiline(tail))
   end
   
@@ -57,11 +57,17 @@ defmodule CsvTree do
   end
   def trim_map(value), do: value
   
-  def merge_map_recursive(first, %{"" => value2}) do
+  def merge_map_recursive(first, %{"" => value2}) when is_map(first) do
     [head | _] = Map.keys(first)
     %{^head => value} = first
     %{head => merge_map_recursive(value, value2)}
   end
-  def merge_map_recursive(first, second) when is_list(first) or is_list(second), do: [trim_map(first) | trim_map(second)]
+  
+  def merge_map_recursive(first, %{"" => value2}) do
+    %{first => trim_map(value2)}
+  end
+  def merge_map_recursive(first, second) when is_list(first) and is_list(second), do: first ++ second
+  def merge_map_recursive(first, second) when is_list(first), do: first ++ [second]
+  def merge_map_recursive(first, second) when is_list(second), do: [first] ++ second
   def merge_map_recursive(first, second), do: [trim_map(first), trim_map(second)]
 end

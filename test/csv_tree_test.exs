@@ -17,5 +17,7 @@ defmodule CsvTreeTest do
     assert CsvTree.build_multiline(["a,,b, c,,", ",d,,e,f,", "g,,h,i"]) == [%{"a" => [%{"b" => "c"}, %{"d" => %{"e" => "f"}}]}, %{"g" => %{"h" => "i"}}]
     assert CsvTree.build_multiline(["a,,b, c,,", ",d,,e,f,", "g,,h,i", ",j,k,l"]) == [%{"a" => [%{"b" => "c"}, %{"d" => %{"e" => "f"}}]}, %{"g" => [%{"h" => "i"}, %{"j" => %{"k" => "l"}}]}]
     assert CsvTree.build_multiline(["a,,b, c,,", ",d,,e,f,", "g,,h,i", "j,,,,k,l"]) == [%{"a" => [%{"b" => "c"}, %{"d" => %{"e" => "f"}}]}, %{"g" => %{"h" => "i"}}, %{"j" => %{"k" => "l"}}]
+    assert CsvTree.build_multiline(["a,,b, c,,", ",d,,e,f,", "g,,h,i", "j,,,,k,l", "m,n"]) == [%{"a" => [%{"b" => "c"}, %{"d" => %{"e" => "f"}}]}, %{"g" => %{"h" => "i"}}, %{"j" => %{"k" => "l"}}, %{"m" => "n"}]
+    assert CsvTree.build_multiline(["a,,b", "c", "d,e,f", ",,,g,h", ",,,i"]) == [%{"a" => "b"}, "c", %{"d" => %{"e" => %{"f" => [%{"g" => "h"}, "i"]}}}]
   end
 end
