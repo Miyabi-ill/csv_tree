@@ -10,42 +10,61 @@ defmodule CsvTree do
      {"d" => "e"}
     ]}
   """
+  def oneline_to_map(line), do: String.split(line, ",") |> list_to_map() |> trim_map()
   
-  def build_oneline(line) do
-    _build_oneline_notrim(line)
+  def multiline_to_map([head | tail]) do
+    map = oneline_to_map(head)
+    process_multiline(map, tail)
     |> trim_map()
   end
   
-  defp _build_oneline_notrim(line) do
-    String.split(line, ",")
-    |> build_map()
+  defp process_multiline(prev, []), do: prev
+  defp process_multiline(prev, [head | tail]) do
+    map = String.split(head, ",")
+    |> list_to_map()
+    current = concat_map_recursive(prev, map)
+    process_multiline(current, tail)
   end
   
-  def build_twoline(line1, line2) do
-    _build_twoline_notrim(line1, line2)
-    |> trim_map()
+  defp concat_map_recursive(false, map), do: map
+  defp concat_map_recursive(%{"" => value1}, %{"" => value2}), do: concat_map_recursive(value1, value2)
+  defp concat_map_recursive(value, %{"" => value2}) do
+    trim = trim_map(value2)
+    if is_map(value) do
+      ([head | _] = Map.keys(value)
+      %{^head => value1} = value
+      %{head => concat_map_recursive(value1, value2)})
+    else
+      if is_list(value) do
+        [head | tail] = Enum.reverse(value)
+        result = concat_map_recursive(head, %{"" => value2})
+        if is_list(result) do
+          result ++ tail
+          |> Enum.reverse()
+        else
+          [result] ++ tail
+          |> Enum.reverse()
+        end
+      else
+        if trim == "" do
+          value
+        else
+          %{value => trim}
+        end
+      end
+    end
   end
+  defp concat_map_recursive(map1, map2) when is_map(map1) and is_map(map2), do: [trim_map(map1), map2]
+  defp concat_map_recursive(list1, value2) when is_list(list1), do: trim_map(list1) ++ [value2]
+  defp concat_map_recursive(value1, map2) when is_map(map2), do: [value1, map2]
+  defp concat_map_recursive(value1, value2), do: [value1, value2]
   
-  defp _build_twoline_notrim(line1, line2) do
-    map1 = String.split(line1, ",")
-    |> build_map()
-    map2 = String.split(line2, ",")
-    |> build_map()
-    merge_map_recursive(map1, map2)
-  end
+  #1行のリストをマップに
+  defp list_to_map([head | []]), do: String.trim(head)
+  defp list_to_map([head | tail]), do: %{String.trim(head) => list_to_map(tail)}
   
-  def build_multiline([head | []]), do: _build_oneline_notrim(head)
-  def build_multiline([line1 | [line2 | []]]), do: _build_twoline_notrim(line1, line2)
-  def build_multiline([line1 | [line2 | tail]]) do
-    map = _build_twoline_notrim(line1, line2)
-    merge_map_recursive(map, build_multiline(tail))
-  end
-  
-  def build_map([head | []]), do: String.trim(head)
-  def build_map([head | tail]), do: %{String.trim(head) => build_map(tail)}
-  
-  def trim_map(%{"" => value}), do: trim_map(value)
-  def trim_map(map) when is_map(map) do
+  defp trim_map(%{"" => value}), do: trim_map(value)
+  defp trim_map(map) when is_map(map) do
     [head | _] = Map.keys(map)
     %{^head => value} = map
     trim = trim_map(value)
@@ -55,19 +74,9 @@ defmodule CsvTree do
       %{head => trim}
     end
   end
-  def trim_map(value), do: value
-  
-  def merge_map_recursive(first, %{"" => value2}) when is_map(first) do
-    [head | _] = Map.keys(first)
-    %{^head => value} = first
-    %{head => merge_map_recursive(value, value2)}
+  defp trim_map(value) when is_list(value) do
+    [head | tail] = Enum.reverse(value)
+    Enum.reverse([trim_map(head) | tail])
   end
-  
-  def merge_map_recursive(first, %{"" => value2}) do
-    %{first => trim_map(value2)}
-  end
-  def merge_map_recursive(first, second) when is_list(first) and is_list(second), do: first ++ second
-  def merge_map_recursive(first, second) when is_list(first), do: first ++ [second]
-  def merge_map_recursive(first, second) when is_list(second), do: [first] ++ second
-  def merge_map_recursive(first, second), do: [trim_map(first), trim_map(second)]
+  defp trim_map(value), do: value
 end

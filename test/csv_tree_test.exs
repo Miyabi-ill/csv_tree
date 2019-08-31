@@ -3,21 +3,15 @@ defmodule CsvTreeTest do
   doctest CsvTree
 
   test "build map from oneline csv" do
-    assert CsvTree.build_oneline("a,,b, c,d,e,,,,") == %{"a" => %{"b" => %{"c" => %{"d" => "e"}}}}
-  end
-  
-  test "build map from twoline csv" do
-    assert CsvTree.build_twoline("a,b", "c") == [%{"a" => "b"}, "c"]
-    assert CsvTree.build_twoline("a,,b, c,,", ",d,,e,f,") == %{"a" => [%{"b" => "c"}, %{"d" => %{"e" => "f"}}]}
-    assert CsvTree.build_twoline("a,,b, c,,", ",,d,,e,f,") == %{"a" => [%{"b" => "c"}, %{"d" => %{"e" => "f"}}]}
+    assert CsvTree.oneline_to_map(",,a,,b, c,d,e,,,,") == %{"a" => %{"b" => %{"c" => %{"d" => "e"}}}}
   end
   
   test "build map from multiline csv" do
-    assert CsvTree.build_multiline(["a,,b, c,,", ",d,,e,f,"]) == %{"a" => [%{"b" => "c"}, %{"d" => %{"e" => "f"}}]}
-    assert CsvTree.build_multiline(["a,,b, c,,", ",d,,e,f,", "g,,h,i"]) == [%{"a" => [%{"b" => "c"}, %{"d" => %{"e" => "f"}}]}, %{"g" => %{"h" => "i"}}]
-    assert CsvTree.build_multiline(["a,,b, c,,", ",d,,e,f,", "g,,h,i", ",j,k,l"]) == [%{"a" => [%{"b" => "c"}, %{"d" => %{"e" => "f"}}]}, %{"g" => [%{"h" => "i"}, %{"j" => %{"k" => "l"}}]}]
-    assert CsvTree.build_multiline(["a,,b, c,,", ",d,,e,f,", "g,,h,i", "j,,,,k,l"]) == [%{"a" => [%{"b" => "c"}, %{"d" => %{"e" => "f"}}]}, %{"g" => %{"h" => "i"}}, %{"j" => %{"k" => "l"}}]
-    assert CsvTree.build_multiline(["a,,b, c,,", ",d,,e,f,", "g,,h,i", "j,,,,k,l", "m,n"]) == [%{"a" => [%{"b" => "c"}, %{"d" => %{"e" => "f"}}]}, %{"g" => %{"h" => "i"}}, %{"j" => %{"k" => "l"}}, %{"m" => "n"}]
-    assert CsvTree.build_multiline(["a,,b", "c", "d,e,f", ",,,g,h", ",,,i"]) == [%{"a" => "b"}, "c", %{"d" => %{"e" => %{"f" => [%{"g" => "h"}, "i"]}}}]
+    assert CsvTree.multiline_to_map(["a,,b, c,,", ",d,,e,f,"]) == %{"a" => [%{"b" => "c"}, %{"d" => %{"e" => "f"}}]}
+    assert CsvTree.multiline_to_map(["a,,b, c,,", ",d,,e,f,", "g,,h,i"]) == [%{"a" => [%{"b" => "c"}, %{"d" => %{"e" => "f"}}]}, %{"g" => %{"h" => "i"}}]
+    assert CsvTree.multiline_to_map(["a,,b, c,,", ",d,,e,f,", "g,,h,i", ",j,k,l"]) == [%{"a" => [%{"b" => "c"}, %{"d" => %{"e" => "f"}}]}, %{"g" => [%{"h" => "i"}, %{"j" => %{"k" => "l"}}]}]
+    assert CsvTree.multiline_to_map(["a,,b, c,,", ",d,,e,f,", "g,,h,i", "j,,,,k,l"]) == [%{"a" => [%{"b" => "c"}, %{"d" => %{"e" => "f"}}]}, %{"g" => %{"h" => "i"}}, %{"j" => %{"k" => "l"}}]
+    assert CsvTree.multiline_to_map(["a,,b, c,,", ",d,,e,f,", "g,,h,i", "j,,,,k,l", "m,n"]) == [%{"a" => [%{"b" => "c"}, %{"d" => %{"e" => "f"}}]}, %{"g" => %{"h" => "i"}}, %{"j" => %{"k" => "l"}}, %{"m" => "n"}]
+    assert CsvTree.multiline_to_map(["a,,b", "c", "d,e,f", ",,,g,h", ",,,i"]) == [%{"a" => "b"}, "c", %{"d" => %{"e" => %{"f" => [%{"g" => "h"}, "i"]}}}]
   end
 end

@@ -22,10 +22,10 @@ list100x10000x100 = Enum.map(0..100, fn _ -> GenerateBenchData.generate_oneline(
 list100x10000x33 = Enum.map(0..100, fn _ -> GenerateBenchData.generate_oneline(0, 10000, 3333) end)
 
 Benchee.run(%{
-  "build_10000x100x100" => fn -> CsvTree.build_multiline(list10000x100x100) end,
-  "build_10000x100x33" => fn -> CsvTree.build_multiline(list10000x100x33) end,
-  "build_1000x1000x100" => fn -> CsvTree.build_multiline(list1000x1000x100) end,
-  "build_1000x1000x33" => fn -> CsvTree.build_multiline(list1000x1000x33) end,
-  "build_100x10000x100" => fn -> CsvTree.build_multiline(list100x10000x100) end,
-  "build_100x10000x33" => fn -> CsvTree.build_multiline(list100x10000x33) end
+  "build_10000x100x100" => fn -> CsvTree.multiline_to_map(list10000x100x100) end,
+  "build_10000x100x33" => fn -> CsvTree.multiline_to_map(list10000x100x33) end,
+  "build_1000x1000x100" => fn -> CsvTree.multiline_to_map(list1000x1000x100) end,
+  "build_1000x1000x33" => fn -> CsvTree.multiline_to_map(list1000x1000x33) end,
+  "build_100x10000x100" => fn -> CsvTree.multiline_to_map(list100x10000x100) end,
+  "build_100x10000x33" => fn -> CsvTree.multiline_to_map(list100x10000x33) end
 })
